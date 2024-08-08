@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Dự án Hệ điều hành</title>
+    <meta content="" name="description">
+    <meta content="" name="keywords">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Tải lên Tệp tin</h1>
+        <form id="upload-form" action="http://192.168.1.48:3000/upload" method="post" enctype="multipart/form-data">
+            <input type="file" id="file-input" name="file" required>
+            <button type="submit">Tải lên</button>
+        </form>
+        <div id="file-list"></div>
+        <div id="file-content"></div>
+    </div>
+    <button id="myButton">Đến Danh sách Tệp tin</button>
+
+    <script>
+        document.getElementById('myButton').addEventListener('click', function (event) {
+            var link = 'http://192.168.1.48:3000/file-list';
+            fetch(link)
+                .then(response => response.json())
+                .then(fileList => {
+                    console.log('Danh sách tệp tin:', fileList);
+                    displayFileList(fileList);
+                })
+                .catch(error => {
+                    console.error('Lỗi khi truy xuất danh sách tệp tin:', error);
+                });
+        });
+
+        document.getElementById('upload-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            var formData = new FormData(event.target);
+            fetch(event.target.action, {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Tải lên thất bại');
+                    }
+                    console.log('Tải lên thành công');
+                    document.getElementById('view-button').removeAttribute('disabled');
+                    return fetchFileList();
+                })
+                .catch(error => {
+                    console.error('Lỗi:', error);
+                });
+        });
+
+        document.getElementById('view-button').addEventListener('click', function () {
+            fetchFileList();
+        });
+
+        function fetchFileList() {
+            fetch('http://192.168.1.48:3000/file-list')
+                .then(response => response.json())
+                .then(fileList => {
+                    console.log('Danh sách tệp tin:', fileList);
+                    displayFileList(fileList);
+                })
+                .catch(error => {
+                    console.error('Lỗi khi truy xuất danh sách tệp tin:', error);
+                });
+        }
+
+        function displayFileList(fileList) {
+            var fileListView = document.getElementById('file-list');
+            fileListView.innerHTML = '';
+
+            if (!Array.isArray(fileList)) {
+                console.error('Danh sách tệp tin không hợp lệ:', fileList);
+                return;
+            }
+
+            fileList.forEach(function (filePath, index) {
+                var fileName = extractFileName(filePath);
+                var button = document.createElement('button');
+                button.textContent = fileName;
+                button.addEventListener('click', function () {
+                    window.location.href = filePath;
+
+                    //viewContent(filePath);
+                });
+                fileListView.appendChild(button);
+            });
+        }
+
+        function extractFileName(filePath) {
+            var startIndex = filePath.lastIndexOf('/') + 1;
+            return filePath.substr(startIndex);
+        }
+
+        /*function viewContent(filePath) {
+            fetch(filePath, {
+                method: 'GET'
+            })
+                .then(response => response.text())
+                .then(fileContent => {
+                    document.getElementById('file-content').innerText = fileContent;
+                })
+                .catch(error => {
+                    console.error('Lỗi:', error);
+                });
+        }*/
+    </script>
+</body>
+
+</html>
