@@ -98,18 +98,18 @@ void handle_file_list_request(int client_socket) {
     send_response(client_socket, response);
 }
 
-// Hàm để xử lý yêu cầu GET thông thường
+// Function to handle manual request GET 
 void handle_get_request(int client_socket, const std::string& path) {
     string file_path;
     string content_type;
 
     if (path == "/") {
-        // Nếu đường dẫn là '/', sử dụng tệp index.html
+        // If path is '/', using file index.html
         file_path = "/home/tuananh/Downloads/OS/index.html";
         content_type = "text/html; charset=utf-8";
     } else {
-        // Ngược lại, sử dụng đường dẫn làm tên file
-        string file_name = path.substr(1); // Loại bỏ '/' đầu tiên
+        // Otherwise, using path is file name
+        string file_name = path.substr(1); // Remove first'/'
         file_path = RECEIVED_FILES_DIR + "/" + file_name;
 
         // Determine the Content-Type based on the file extension
@@ -130,7 +130,7 @@ void handle_get_request(int client_socket, const std::string& path) {
     
     
 
-    // Mở file để đọc nội dung
+    // Open file to read content
     ifstream file(file_path, ios::binary);
     if (!file) {
         perror("Failed to open file");
@@ -138,12 +138,12 @@ void handle_get_request(int client_socket, const std::string& path) {
         return;
     }
 
-    // Đọc nội dung file
+    // Read file content
     stringstream ss;
     ss << file.rdbuf();
     string file_content = ss.str();
 
-    // Gửi phản hồi HTTP với nội dung file về client
+    // Send  HTTP response with file content to client
     string response = "HTTP/1.1 200 OK\r\nContent-Type: " + content_type + "\r\nContent-Length: " + to_string(file_content.size()) + "\r\n\r\n" + file_content;
     /*string response = "HTTP/1.1 200 OK\r\nContent-Type: image/jpeg\r\nContent-Length: " + to_string(file_content.size()) + "\r\n\r\n" + file_content;*/
     send_response(client_socket, response);
